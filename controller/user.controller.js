@@ -51,20 +51,9 @@ const userLogin = async (req, res) => {
 const createUser = async (req, res) => {
   try {
     const reqBody = req.body;
-
-    let existingUser = await userIsExistSerivce({ email: reqBody.email });
-    if (existingUser) {
-      return sendResponse(res, 400, false, "Duplicate email found", null);
-    }
-
-    reqBody.password = await bcrypt.hash(reqBody.password, 10);
-    const userRole = await findRole({ name: "user" });
-    reqBody.role = userRole._id;
-    await saveUserService(reqBody);
-
-    return sendResponse(res, 200, true, "User created successfully", null);
+    return await validateAndCreateUser(reqBody, "user", res);
   } catch (error) {
-    console.log("user.controller -> createUser", error);
+    console.error("user.controller -> createUser", error);
     return sendResponse(res, 500, false, "Something went wrong!", {
       message: error.message,
     });
@@ -75,23 +64,41 @@ const createUser = async (req, res) => {
 const createSeller = async (req, res) => {
   try {
     const reqBody = req.body;
-    let existingUser = await userIsExistSerivce({ email: reqBody.email });
-    if (existingUser) {
-      return sendResponse(res, 400, false, "Duplicate email found", null);
-    }
-
-    reqBody.password = await bcrypt.hash(reqBody.password, 10);
-    const userRole = await findRole({ name: "seller" });
-    reqBody.role = userRole._id;
-    await saveUserService(reqBody);
-
-    return sendResponse(res, 200, true, "Seller created successfully", null);
+    return await validateAndCreateUser(reqBody, "seller", res);
   } catch (error) {
-    console.log("user.controller -> createSeller", error);
+    console.error("user.controller -> createSeller", error);
     return sendResponse(res, 500, false, "Something went wrong!", {
       message: error.message,
     });
   }
+};
+
+// Validation for create user and role
+const validateAndCreateUser = async (reqBody, roleType, res) => {
+  
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(reqBody.email)) {
+    return sendResponse(res, 400, false, "Invalid email format", null);
+  }
+
+  // Check for duplicate email
+  let existingUser = await userIsExistSerivce({ email: reqBody.email });
+  if (existingUser) {
+    return sendResponse(res, 400, false, "Duplicate email found", null);
+  }
+
+  // Hash password
+  reqBody.password = await bcrypt.hash(reqBody.password, 10);
+
+  // Get user role
+  const userRole = await findRole({ name: roleType });
+  reqBody.role = userRole._id;
+
+  // Save user
+  await saveUserService(reqBody);
+
+  return sendResponse(res, 200, true, `${roleType} created successfully`, null);
 };
 
 module.exports = {
