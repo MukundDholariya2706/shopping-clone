@@ -75,7 +75,6 @@ const createSeller = async (req, res) => {
 
 // Validation for create user and role
 const validateAndCreateUser = async (reqBody, roleType, res) => {
-  
   // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(reqBody.email)) {

@@ -7,7 +7,7 @@ const {
 
 const getUserList = async (req, res) => {
   try {
-    let { sortBy, sortDirection, page = 1, limit = 10 } = req.query;
+    let { sortBy, sortDirection, page = 1, limit = 10, search } = req.query;
 
     let sortObj = { createdAt: -1 };
 
@@ -21,6 +21,18 @@ const getUserList = async (req, res) => {
         $ne: "super admin",
       },
     };
+
+    // Add search criteria to filterObj
+    if (search) {
+      filterObj.$or = [
+        { first_name: { $regex: new RegExp(search, "i") } },
+        { last_name: { $regex: new RegExp(search, "i") } },
+        { email: { $regex: new RegExp(search, "i") } },
+        // Add more fields for searching as needed
+      ];
+    }
+
+    console.log(filterObj, "filterObj");
 
     let skip = (page - 1) * limit;
 
@@ -95,12 +107,14 @@ const getUserList = async (req, res) => {
       getAllUserList(userListingQuery),
     ]);
 
+    console.log(totalUserCount, "totalUserCount");
+
     const response = {
       userList,
       pagination: {
         page,
         limit,
-        total: totalUserCount[0].totalCount,
+        total: totalUserCount.length > 0 ? totalUserCount[0].totalCount : 0,
       },
     };
 
