@@ -1,6 +1,9 @@
-const User = require("../models/user.model");
 const sendResponse = require("../services/common.service");
-const { getAllUserList } = require("../services/user.service");
+const {
+  getAllUserList,
+  deleteUserById,
+  userIsExistSerivce,
+} = require("../services/user.service");
 
 const getUserList = async (req, res) => {
   try {
@@ -110,4 +113,28 @@ const getUserList = async (req, res) => {
   }
 };
 
-module.exports = { getUserList };
+const deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const userIsExist = await userIsExistSerivce({ _id: userId });
+    if (!userIsExist) {
+      return sendResponse(res, 404, false, "User not found", null);
+    }
+
+    const deletedUser = await deleteUserById(userId);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "User delete successfully",
+      deletedUser
+    );
+  } catch (error) {
+    console.log("admin.controller -> deleteUser", error);
+    return sendResponse(res, 500, false, "Something went worng!", {
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { getUserList, deleteUser };

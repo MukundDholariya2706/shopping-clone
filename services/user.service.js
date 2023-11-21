@@ -26,4 +26,14 @@ const getAllUserList = async (query) => {
     throw error;
   }
 };
-module.exports = { userIsExistSerivce, saveUserService, getAllUserList };
+
+const deleteUserById = async (userId) => {
+  try {
+    return await User.findByIdAndDelete(userId);
+  } catch (error) {
+    console.log("user.service -> deleteUserById", error);
+    throw error;
+  }
+}
+
+module.exports = { userIsExistSerivce, saveUserService, getAllUserList, deleteUserById };

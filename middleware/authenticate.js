@@ -27,7 +27,6 @@ let authenticate = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.API_SECRET);
-    console.log(decoded, "decoded");
     const user = await User.aggregate([
       {
         $match: {
@@ -42,11 +41,15 @@ let authenticate = async (req, res, next) => {
           as: "role",
         },
       },
+      {
+        $unwind: "$role"
+      }
     ]);
 
     req.user = user[0];
     next();
   } catch (error) {
+    console.log("authenticate -> authenticate", error)
     return sendResponse(res, 500, false, "Something went worng!", {
       message: error.message,
     });
