@@ -58,7 +58,7 @@ const createUser = async (req, res) => {
     }
 
     reqBody.password = await bcrypt.hash(reqBody.password, 10);
-    const userRole = await findRole({ name: "seller" });
+    const userRole = await findRole({ name: "user" });
     reqBody.role = userRole._id;
     await saveUserService(reqBody);
 

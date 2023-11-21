@@ -17,4 +17,13 @@ const saveUserService = async (userData) => {
     throw error;
   }
 };
-module.exports = { userIsExistSerivce, saveUserService };
+
+const getAllUserList = async (query) => {
+  try {
+    return await User.aggregate(query);
+  } catch (error) {
+    console.log("user.service -> getAllUserList", error);
+    throw error;
+  }
+};
+module.exports = { userIsExistSerivce, saveUserService, getAllUserList };
