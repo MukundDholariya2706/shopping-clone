@@ -1,4 +1,4 @@
-const sendResponse = require("../services/common.service");
+const {sendResponse} = require("../services/common.service");
 
 // check user have access
 const validateRole = (userRoles) => {

@@ -1,6 +1,5 @@
 const bcrypt = require("bcryptjs");
-const User = require("../models/user.model");
-const sendResponse = require("../services/common.service");
+const { sendResponse } = require("../services/common.service");
 const {
   userIsExistSerivce,
   saveUserService,
