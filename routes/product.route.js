@@ -5,10 +5,11 @@ const {
   addProduct,
   deleteProduct,
   uploadImages,
-  getProductList
+  getProductList,
+  sendProductImage
 } = require("../controller/product.controller");
 const { uploadError } = require("../services/common.service");
-const { upload, multerConfig } = require("../services/multer.service");
+const { multerConfig } = require("../services/multer.service");
 const productRouter = express.Router();
 
 const validateAdminRole = validateRole(["seller"]);
@@ -31,5 +32,5 @@ productRouter.post(
   uploadError,
   uploadImages
 );
-
+productRouter.get("/image/:fileName", sendProductImage)
 module.exports = productRouter;

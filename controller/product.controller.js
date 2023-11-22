@@ -1,3 +1,4 @@
+const path = require("path");
 const { sendResponse, ObjectId } = require("../services/common.service");
 const {
   saveProduct,
@@ -85,7 +86,7 @@ const getProductList = async (req, res) => {
       },
     ];
 
-    // 
+    //
     const [totalProductCount, productList] = await Promise.all([
       listProductService(totalProductCountQuery),
       listProductService(query),
@@ -228,6 +229,12 @@ const uploadImages = async (req, res) => {
   }
 };
 
+// send product image
+const sendProductImage = async (req, res) => {
+  const filePath = path.join(__dirname, "..");
+  res.sendFile(filePath + "/public/" + req.params.fileName);
+};
+
 // setup cover image
 const setupCoverImage = async (productId, ownerId) => {
   // find product by id and ownerDetails id
@@ -251,4 +258,5 @@ module.exports = {
   updateProduct,
   uploadImages,
   getProductList,
+  sendProductImage,
 };
