@@ -107,8 +107,6 @@ const getUserList = async (req, res) => {
       getAllUserList(userListingQuery),
     ]);
 
-    console.log(totalUserCount, "totalUserCount");
-
     const response = {
       userList,
       pagination: {

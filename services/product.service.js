@@ -36,9 +36,18 @@ const updateProductService = async (query, productData) => {
   }
 };
 
+const listProductService = async (query) => {
+  try {
+    return await Product.aggregate(query);
+  } catch (error) {
+    console.log("product.service -> listProductService", error);
+  }
+};
+
 module.exports = {
   saveProduct,
   findProduct,
   deleteProductService,
   updateProductService,
+  listProductService,
 };

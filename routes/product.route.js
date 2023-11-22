@@ -5,12 +5,15 @@ const {
   addProduct,
   deleteProduct,
   uploadImages,
+  getProductList
 } = require("../controller/product.controller");
 const { uploadError } = require("../services/common.service");
 const { upload, multerConfig } = require("../services/multer.service");
 const productRouter = express.Router();
 
 const validateAdminRole = validateRole(["seller"]);
+
+productRouter.get("/get-product", authenticate, getProductList);
 
 productRouter.post("/add-product", authenticate, validateAdminRole, addProduct);
 productRouter.delete(
