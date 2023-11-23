@@ -7,6 +7,11 @@ const {
   updateProductService,
   listProductService,
 } = require("../services/product.service");
+const {
+  saveImageService,
+  deleteImageService,
+} = require("../services/image.service");
+const { unlinkImage } = require("../utils/utils");
 
 // list all product
 const getProductList = async (req, res) => {
@@ -70,6 +75,29 @@ const getProductList = async (req, res) => {
       },
       {
         $skip: skip,
+      },
+      {
+        $lookup: {
+          from: "image",
+          localField: "productImages",
+          foreignField: "_id",
+          as: "productImages",
+        },
+      },
+      {
+        $project: {
+          productName: 1,
+          productDescription: 1,
+          price: 1,
+          size: 1,
+          gender: 1,
+          isActive: 1,
+          ownerDetails: 1,
+          productImages: {
+            _id: 1,
+            url: 1,
+          },
+        },
       },
     ];
 
@@ -161,17 +189,34 @@ const deleteProduct = async (req, res) => {
           ownerDetails: new ObjectId(req.user._id),
         },
       },
+      {
+        $lookup: {
+          from: "image", // schema (model) name
+          localField: "productImages", // local field in current schema
+          foreignField: "_id",
+          as: "productImages", // save as
+        },
+      },
     ];
 
-    const isProductExist = await findProduct(query);
+    const productExist = await findProduct(query);
 
-    if (isProductExist.length == 0) {
+    if (productExist.length === 0) {
       return sendResponse(res, 404, false, "Product not found", null);
     }
 
+    // Delete the product and its associated image (if any)
     await deleteProductService(productId);
 
-    sendResponse(res, 200, true, "Product deleted succssfully", null);
+    if (productExist[0].productImages != 0) {
+      await deleteImageService({ _id: productExist[0].productImages });
+
+      productExist[0].productImages.map((imagePath) => {
+        unlinkImage(imagePath.url);
+      });
+    }
+
+    return sendResponse(res, 200, true, "Product deleted succssfully", null);
   } catch (error) {
     console.log("product.controller -> deleteProduct", error);
     return sendResponse(res, 500, false, "Something went worng!", {
@@ -184,43 +229,72 @@ const deleteProduct = async (req, res) => {
 const uploadImages = async (req, res) => {
   try {
     const uploadedProductImages = req.files || [];
-
     let productImages = [];
 
     if (uploadedProductImages != 0) {
-      productImages = uploadedProductImages.map(
-        (file) =>
-          (file.imageUrl = `http://localhost:3000/product/image/${file.filename}`)
+      productImages = uploadedProductImages.map((file) => ({
+        url: `http://localhost:3000/product/image/${file.filename}`,
+      }));
+
+      const newImageIds = await saveImageService(productImages);
+      const existingProduct = await findProduct([
+        {
+          $match: {
+            _id: new ObjectId(req.params.productId),
+            ownerDetails: new ObjectId(req.user._id),
+          },
+        },
+        {
+          $lookup: {
+            from: "image", // schema (model) name
+            localField: "productImages", // local field in current schema
+            foreignField: "_id",
+            as: "productImages", // save as
+          },
+        },
+        {
+          $set: {
+            productImages: {
+              $concatArrays: ["$productImages", newImageIds],
+            },
+          },
+        },
+        {
+          $project: {
+            productName: 1,
+            productDescription: 1,
+            price: 1,
+            size: 1,
+            gender: 1,
+            isActive: 1,
+            ownerDetails: 1,
+            productImages: {
+              _id: 1,
+              url: 1,
+            },
+          },
+        },
+      ]);
+
+      // Update the product in the database with the new image information
+      await updateProductService(
+        {
+          _id: req.params.productId,
+          ownerDetails: req.user._id,
+        },
+        {
+          productImages: existingProduct[0].productImages,
+        }
+      );
+
+      return sendResponse(
+        res,
+        200,
+        true,
+        "Product Images upload successfully!",
+        existingProduct
       );
     }
-
-    const query = {
-      _id: req.params.productId,
-      ownerDetails: req.user._id,
-    };
-
-    const existingProduct = await findProduct([
-      {
-        $match: {
-          _id: new ObjectId(req.params.productId),
-          ownerDetails: new ObjectId(req.user._id),
-        },
-      },
-    ]);
-
-    productImages = [...productImages, ...existingProduct[0].productImages];
-
-    const product = await updateProductService(query, {
-      productImages: productImages,
-    });
-
-    return sendResponse(
-      res,
-      200,
-      true,
-      "Product Images upload successfully!",
-      product
-    );
   } catch (error) {
     console.log("product.controller -> uploadImages", error);
     return sendResponse(res, 500, false, "Something went worng!", {
@@ -233,6 +307,17 @@ const uploadImages = async (req, res) => {
 const sendProductImage = async (req, res) => {
   const filePath = path.join(__dirname, "..");
   res.sendFile(filePath + "/public/" + req.params.fileName);
+};
+
+// delete product image
+const deleteProductImage = async (req, res) => {
+  try {
+  } catch (error) {
+    console.log("product.controller -> deleteProductImage", error);
+    sendResponse(res, 500, false, "Something went worng!", {
+      message: error.message,
+    });
+  }
 };
 
 // setup cover image
@@ -249,7 +334,6 @@ const setupCoverImage = async (productId, ownerId) => {
 
   // check cover image is set or not
   const coverImageIsExist = await findProduct(query);
-  console.log(coverImageIsExist, "coverImageIsExist");
 };
 
 module.exports = {
@@ -259,4 +343,5 @@ module.exports = {
   uploadImages,
   getProductList,
   sendProductImage,
+  deleteProductImage,
 };

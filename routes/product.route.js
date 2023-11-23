@@ -9,26 +9,25 @@ const {
   sendProductImage
 } = require("../controller/product.controller");
 const { uploadError } = require("../services/common.service");
-const { multerConfig } = require("../services/multer.service");
+const { upload } = require("../services/multer.service");
 const productRouter = express.Router();
 
-const validateAdminRole = validateRole(["seller"]);
+const validateSellerRole = validateRole(["seller"]);
 
 productRouter.get("/get-product", authenticate, getProductList);
 
-productRouter.post("/add-product", authenticate, validateAdminRole, addProduct);
+productRouter.post("/add-product", authenticate, validateSellerRole, addProduct);
 productRouter.delete(
   "/delete-product/:id",
   authenticate,
-  validateAdminRole,
+  validateSellerRole,
   deleteProduct
 );
 productRouter.post(
   "/product-image/:productId",
   authenticate,
-  validateAdminRole,
-  multerConfig(1, [".jpg", ".jpeg", ".png"]).array("productImages", 5),
-  // upload.array("productImages", 5),
+  validateSellerRole,
+  upload.array("productImages", 5),
   uploadError,
   uploadImages
 );

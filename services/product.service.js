@@ -41,6 +41,16 @@ const listProductService = async (query) => {
     return await Product.aggregate(query);
   } catch (error) {
     console.log("product.service -> listProductService", error);
+    throw error;
+  }
+};
+
+const updateOneProductService = async (query) => {
+  try {
+    return await Product.updateOne(query);
+  } catch (error) {
+    console.log("product.service -> updateOneProductService", error);
+    throw error;
   }
 };
 
@@ -50,4 +60,5 @@ module.exports = {
   deleteProductService,
   updateProductService,
   listProductService,
+  updateOneProductService,
 };

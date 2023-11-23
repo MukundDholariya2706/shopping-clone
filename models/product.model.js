@@ -9,7 +9,12 @@ let productSchema = new mongoose.Schema({
     type: String,
   },
   productImages: {
-    type: [String],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "image",
+      },
+    ],
   },
   coverImage: {
     type: String,
