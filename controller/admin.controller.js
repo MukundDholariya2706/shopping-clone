@@ -5,6 +5,7 @@ const {
   userIsExistSerivce,
 } = require("../services/user.service");
 
+// user list
 const getUserList = async (req, res) => {
   try {
     let { sortBy, sortDirection, page = 1, limit = 10, search } = req.query;
@@ -125,6 +126,7 @@ const getUserList = async (req, res) => {
   }
 };
 
+// delete user
 const deleteUser = async (req, res) => {
   try {
     const userId = req.params.id;

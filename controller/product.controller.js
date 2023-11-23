@@ -10,6 +10,7 @@ const {
 const {
   saveImageService,
   deleteImageService,
+  findImageService,
 } = require("../services/image.service");
 const { unlinkImage } = require("../utils/utils");
 
@@ -167,7 +168,35 @@ const updateProduct = async (req, res) => {
   try {
     const reqBody = req.body;
 
-    return sendResponse(res, 200, true, "Product update successfully!");
+    const query = [
+      {
+        $match: {
+          _id: new ObjectId(req.params.productId),
+          ownerDetails: new ObjectId(req.user._id),
+        },
+      },
+    ];
+
+    const productExist = await findProduct(query);
+    if (productExist.length === 0) {
+      return sendResponse(res, 404, false, "Product not found", null);
+    }
+
+    const updatedProduct = await updateProductService(
+      {
+        _id: req.params.productId,
+        ownerDetails: req.user._id,
+      },
+      reqBody
+    );
+
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Product update successfully!",
+      updatedProduct
+    );
   } catch (error) {
     console.log("product.controller -> updateProduct", error);
     return sendResponse(res, 500, false, "Something went worng!", {
@@ -312,9 +341,52 @@ const sendProductImage = async (req, res) => {
 // delete product image
 const deleteProductImage = async (req, res) => {
   try {
+    const imageQuery = [
+      {
+        $match: {
+          _id: new ObjectId(req.params.imageId),
+        },
+      },
+    ];
+
+    const productQuery = [
+      {
+        $match: {
+          _id: new ObjectId(req.params.productId),
+        },
+      },
+    ];
+
+    const [isProductExsits, isProductImageExists] = await Promise.all([
+      findProduct(productQuery),
+      findImageService(imageQuery),
+    ]);
+
+    console.log(isProductImageExists, "isProductImageExists");
+
+    if (isProductExsits.length === 0) {
+      return sendResponse(res, 404, false, "Product not found", null);
+    }
+
+    if (isProductImageExists.length === 0) {
+      return sendResponse(res, 404, false, "Product image not found", null);
+    }
+
+    await deleteImageService({_id: isProductImageExists[0]});
+    isProductImageExists.map((imagePath) => {
+      unlinkImage(imagePath.url);
+    });
+
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Product images delete successfully!",
+      null
+    );
   } catch (error) {
     console.log("product.controller -> deleteProductImage", error);
-    sendResponse(res, 500, false, "Something went worng!", {
+    return sendResponse(res, 500, false, "Something went worng!", {
       message: error.message,
     });
   }

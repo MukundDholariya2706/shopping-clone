@@ -18,4 +18,13 @@ const deleteImageService = async (data) => {
   }
 };
 
-module.exports = { saveImageService, deleteImageService };
+const findImageService = async (query) => {
+  try {
+    return await Image.aggregate(query);
+  } catch (error) {
+    console.log("image.service -> findImageSerivce", error);
+    throw error;
+  }
+}
+
+module.exports = { saveImageService, deleteImageService, findImageService };
