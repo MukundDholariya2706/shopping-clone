@@ -10,12 +10,11 @@ let cartSchema = new mongoose.Schema({
       },
       productSize: {
         type: String,
-        required: true,
       },
       quantity: {
         type: Number,
         default: 1, // Default quantity is 1
-        min: 1
+        min: 1,
       },
     },
   ],

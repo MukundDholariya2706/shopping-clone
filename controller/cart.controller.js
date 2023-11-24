@@ -142,11 +142,11 @@ const updateCartItem = async (req, res) => {
     }
 
     // Use updateOne for atomic updates
-    await updateCartService(
+    const value = await updateCartService(
       { _id: cartId },
-      { $set: { cartItem: cart.cartItem } }
+      cart
+      // { $set: { cartItem: cart.cartItem } }
     );
-
     return sendResponse(res, 200, true, "Cart update successfully!", cart);
   } catch (error) {
     console.log("cart.controller -> removeItemFromCart", error);

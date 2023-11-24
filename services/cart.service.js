@@ -18,8 +18,9 @@ const saveCartService = async (cartData) => {
   }
 };
 
-const updateCartService = async (query) => {
+const updateCartService = async (query, data) => {
   try {
+    return await Cart.findOneAndUpdate(query, data);
     return await Cart.updateOne(query);
   } catch (error) {
     console.log("cart.service -> removeItemFromCartService", error);
