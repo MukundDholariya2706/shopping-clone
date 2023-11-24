@@ -26,7 +26,6 @@ let productSchema = new mongoose.Schema({
   size: {
     type: [String],
     enum: ["s", "m", "l", "xl"],
-    required: true,
   },
   gender: {
     type: String,
