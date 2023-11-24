@@ -33,8 +33,6 @@ const getUserList = async (req, res) => {
       ];
     }
 
-    console.log(filterObj, "filterObj");
-
     let skip = (page - 1) * limit;
 
     // userListing query

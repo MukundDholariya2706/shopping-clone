@@ -4,6 +4,7 @@ const {
   listCartService,
   saveCartService,
   updateCartService,
+  deleteCartService,
 } = require("../services/cart.service");
 const { sendResponse, ObjectId } = require("../services/common.service");
 
@@ -68,7 +69,6 @@ const addToCart = async (req, res) => {
   try {
     const body = req.body;
 
-    console.log(body, "body");
 
     // checl if the user has an existing cart
     let cart = await Cart.findOne({ cartOwner: req.user._id });
@@ -78,9 +78,7 @@ const addToCart = async (req, res) => {
       cart = new Cart({ cartOwner: req.user._id, cartItem: [] });
     }
 
-    console.log(cart, "cart");
     // Check if the product is already in the cart
-
     const existingCartItem = cart.cartItem.find(
       (item) => item.product.toString() === body.productId.toString()
     );
@@ -108,6 +106,7 @@ const addToCart = async (req, res) => {
   }
 };
 
+// update cart item
 const updateCartItem = async (req, res) => {
   try {
     const cartId = req.params.cartId;
@@ -121,13 +120,19 @@ const updateCartItem = async (req, res) => {
       },
     ]);
 
-    cart = { ...cart[0] };
+    if(cart.length === 0){
+      return sendResponse(res, 404, false, "Cart not found!", null);
+    }
 
+    cart = { ...cart[0] };
     const existingCartItemIndex = cart.cartItem.findIndex(
       (item) => item.product.toString() === productId.toString()
     );
 
     if (quantity === 0 && existingCartItemIndex !== -1) {
+      if (cart.cartItem.length === 1) {
+        await deleteCartService(cartId);
+      }
       cart.cartItem.splice(existingCartItemIndex, 1);
     } else if (quantity > 0 && existingCartItemIndex !== -1) {
       cart.cartItem[existingCartItemIndex].quantity =

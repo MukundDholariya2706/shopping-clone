@@ -27,8 +27,18 @@ const updateCartService = async (query) => {
   }
 };
 
+const deleteCartService = async (cartId) => {
+  try {
+    return await Cart.findByIdAndDelete(cartId);
+  } catch (error) {
+    console.log("cart.service -> deleteCartService", error);
+    throw error;
+  }
+}
+
 module.exports = {
   listCartService,
   saveCartService,
-  updateCartService
+  updateCartService,
+  deleteCartService
 };
