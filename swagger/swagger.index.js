@@ -37,6 +37,10 @@ const swaggerDoc = {
       description: "Cart All API Route",
     },
     {
+      name: "Order",
+      description: "Order All API Route"
+    },
+    {
       name: "Rating",
       description: "Rating All API Route",
     },

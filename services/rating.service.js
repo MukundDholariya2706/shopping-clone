@@ -18,4 +18,27 @@ const ratingService = async (query) => {
   }
 };
 
-module.exports = { addReviceSerivce, ratingService };
+const updateRatingService = async (ratingId, body) => {
+  try {
+    return await Rating.findByIdAndUpdate(ratingId, body);
+  } catch (error) {
+    console.log("rating.service -> updateRatingService", error);
+    throw error;
+  }
+};
+
+const deleteRatingService = async (ratingId) => {
+  try {
+    return await Rating.findByIdAndDelete(ratingId);
+  } catch (error){
+    console.log("rating.service -> deleteRatingService", error);
+    throw error;
+  }
+};
+
+module.exports = {
+  addReviceSerivce,
+  ratingService,
+  updateRatingService,
+  deleteRatingService,
+};
