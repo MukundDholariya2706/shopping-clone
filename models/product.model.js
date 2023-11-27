@@ -28,7 +28,7 @@ let productSchema = new mongoose.Schema({
     enum: ["s", "m", "l", "xl"],
   },
   gender: {
-    type: String,
+    type: [String],
     enum: ["male", "female"],
   },
   isActive: {

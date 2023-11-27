@@ -19,6 +19,7 @@ const getProductList = async (req, res) => {
   try {
     let { page = 1, limit = 10, min, max, gender, size, search } = req.query;
     let skip = (page - 1) * limit;
+    let sortProductInRandom = false;
 
     const user = req.user;
     let filterObj = {};
@@ -27,6 +28,7 @@ const getProductList = async (req, res) => {
       filterObj = {
         ownerDetails: new ObjectId(user._id),
       };
+      sortProductInRandom = false;
     }
 
     // only show active product
@@ -34,6 +36,7 @@ const getProductList = async (req, res) => {
       filterObj = {
         isActive: true,
       };
+      sortProductInRandom = true;
     }
 
     // size filter
@@ -54,7 +57,7 @@ const getProductList = async (req, res) => {
 
     // filter by gender
     if (gender) {
-      filterObj.gender = gender;
+      filterObj.gender = { $in: gender.split(",") };
     }
 
     // product by search
@@ -120,6 +123,10 @@ const getProductList = async (req, res) => {
       listProductService(totalProductCountQuery),
       listProductService(query),
     ]);
+
+    if (sortProductInRandom) {
+      productList.sort(() => Math.random() - 0.5);
+    }
 
     const response = {
       productList,
@@ -258,11 +265,12 @@ const deleteProduct = async (req, res) => {
 const uploadImages = async (req, res) => {
   try {
     const uploadedProductImages = req.files || [];
+    const apiUrl = req.headers.host;
     let productImages = [];
 
     if (uploadedProductImages != 0) {
       productImages = uploadedProductImages.map((file) => ({
-        url: `http://localhost:3000/product/image/${file.filename}`,
+        url: `http://${apiUrl}/product/image/${file.filename}`,
       }));
 
       const newImageIds = await saveImageService(productImages);
@@ -341,6 +349,16 @@ const sendProductImage = async (req, res) => {
 // delete product image
 const deleteProductImage = async (req, res) => {
   try {
+    if (!req.params.productId || !req.params.imageId) {
+      return sendResponse(
+        res,
+        404,
+        true,
+        "Product Id or Image Id not found",
+        null
+      );
+    }
+
     const imageQuery = [
       {
         $match: {
@@ -372,7 +390,7 @@ const deleteProductImage = async (req, res) => {
       return sendResponse(res, 404, false, "Product image not found", null);
     }
 
-    await deleteImageService({_id: isProductImageExists[0]});
+    await deleteImageService({ _id: isProductImageExists[0] });
     isProductImageExists.map((imagePath) => {
       unlinkImage(imagePath.url);
     });

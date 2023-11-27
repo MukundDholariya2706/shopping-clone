@@ -35,7 +35,7 @@ const getUserList = async (req, res) => {
       ];
     }
 
-    let skip = (page - 1) * limit;
+    let skip = (page - 1) * +limit;
 
     // userListing query
     const userListingQuery = [
@@ -57,7 +57,7 @@ const getUserList = async (req, res) => {
         $sort: sortObj,
       },
       {
-        $limit: limit,
+        $limit: +limit,
       },
       {
         $skip: skip,

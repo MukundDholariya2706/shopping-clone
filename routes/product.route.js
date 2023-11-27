@@ -8,7 +8,7 @@ const {
   getProductList,
   sendProductImage,
   updateProduct,
-  deleteProductImage
+  deleteProductImage,
 } = require("../controller/product.controller");
 const { uploadError } = require("../services/common.service");
 const { upload } = require("../services/multer.service");
@@ -18,8 +18,18 @@ const validateSellerRole = validateRole(["seller"]);
 
 productRouter.get("/get-product", authenticate, getProductList);
 
-productRouter.post("/add-product", authenticate, validateSellerRole, addProduct);
-productRouter.put("/update-product/:productId", authenticate, validateSellerRole, updateProduct);
+productRouter.post(
+  "/add-product",
+  authenticate,
+  validateSellerRole,
+  addProduct
+);
+productRouter.put(
+  "/update-product/:productId",
+  authenticate,
+  validateSellerRole,
+  updateProduct
+);
 productRouter.delete(
   "/delete-product/:id",
   authenticate,
@@ -35,5 +45,10 @@ productRouter.post(
   uploadImages
 );
 productRouter.get("/image/:fileName", sendProductImage);
-productRouter.delete("/product-image/:productId/imageId/:imageId", deleteProductImage);
+productRouter.delete(
+  "/product-image/:productId/imageId/:imageId",
+  authenticate,
+  validateSellerRole,
+  deleteProductImage
+);
 module.exports = productRouter;
