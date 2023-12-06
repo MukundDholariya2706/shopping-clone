@@ -23,14 +23,14 @@ let productSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  size: {
-    type: [String],
-    enum: ["s", "m", "l", "xl"],
-  },
-  gender: {
-    type: [String],
-    enum: ["male", "female"],
-  },
+  // size: {
+  //   type: [String],
+  //   enum: ["s", "m", "l", "xl"],
+  // },
+  // gender: {
+  //   type: [String],
+  //   enum: ["male", "female"],
+  // },
   isActive: {
     type: Boolean,
     default: true,
@@ -38,6 +38,9 @@ let productSchema = new mongoose.Schema({
   ownerDetails: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
+  },
+  stripeProductId: {
+    type: String,
   },
 });
 

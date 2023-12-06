@@ -9,6 +9,7 @@ const {
   sendProductImage,
   updateProduct,
   deleteProductImage,
+  createStripeProduct,
 } = require("../controller/product.controller");
 const { uploadError } = require("../services/common.service");
 const { upload } = require("../services/multer.service");
@@ -51,4 +52,7 @@ productRouter.delete(
   validateSellerRole,
   deleteProductImage
 );
+
+productRouter.post("/stripe-product", createStripeProduct);
+
 module.exports = productRouter;

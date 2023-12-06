@@ -18,6 +18,10 @@ const swaggerDoc = {
       url: "http://172.16.0.210:3001",
       description: "Local Server",
     },
+    {
+      url: "http://192.168.1.2:3001",
+      description: "Local Server",
+    }
   ],
   tags: [
     {

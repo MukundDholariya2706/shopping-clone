@@ -22,6 +22,9 @@ let orderSchema = new mongoose.Schema(
       type: String,
       require: true,
     },
+    stripePaymentId: {
+      type: String
+    }, 
     paymentStatus: {
       type: String,
     },

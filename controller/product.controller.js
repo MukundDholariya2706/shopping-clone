@@ -13,6 +13,7 @@ const {
   findImageService,
 } = require("../services/image.service");
 const { unlinkImage } = require("../utils/utils");
+const { createProductInStripe, updateProductInStripe, deleteProductInStripe } = require("../services/payment.service");
 
 // list all product
 const getProductList = async (req, res) => {
@@ -159,6 +160,8 @@ const addProduct = async (req, res) => {
     const reqBody = req.body;
 
     reqBody.ownerDetails = req.user._id;
+    const stripeProductDetails = await createProductInStripe(reqBody);
+    reqBody.stripeProductId = stripeProductDetails.id;
     const product = await saveProduct(reqBody);
 
     return sendResponse(res, 200, true, "Product Add Successfully!!", product);
@@ -242,7 +245,10 @@ const deleteProduct = async (req, res) => {
     }
 
     // Delete the product and its associated image (if any)
-    await deleteProductService(productId);
+    await Promise.all([
+      deleteProductService(productId),
+      deleteProductInStripe(productExist[0].stripeProductId)
+    ])
 
     if (productExist[0].productImages != 0) {
       await deleteImageService({ _id: productExist[0].productImages });
@@ -305,6 +311,7 @@ const uploadImages = async (req, res) => {
             gender: 1,
             isActive: 1,
             ownerDetails: 1,
+            stripeProductId: 1,
             productImages: {
               _id: 1,
               url: 1,
@@ -323,6 +330,11 @@ const uploadImages = async (req, res) => {
           productImages: existingProduct[0].productImages,
         }
       );
+
+      console.log(existingProduct[0].productImages, 'existingProduct[0].productImages');
+      const resultArray = existingProduct[0].productImages.map(item => item.url);
+
+      await updateProductInStripe(existingProduct[0].stripeProductId, {images: resultArray});
 
       return sendResponse(
         res,
@@ -426,6 +438,16 @@ const setupCoverImage = async (productId, ownerId) => {
   const coverImageIsExist = await findProduct(query);
 };
 
+const createStripeProduct = async (req, res) => {
+  try {
+    const product = await createProductInStripe(1, 3);
+    return sendResponse(res, 200, true, "", product);
+  } catch (error) {
+    return sendResponse(res, 500, false, "Something went worng!", {
+      message: error.message,
+    });
+  }
+};
 module.exports = {
   addProduct,
   deleteProduct,
@@ -434,4 +456,5 @@ module.exports = {
   getProductList,
   sendProductImage,
   deleteProductImage,
+  createStripeProduct,
 };
