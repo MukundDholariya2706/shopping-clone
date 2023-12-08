@@ -6,6 +6,10 @@ const {
   deleteUserById,
   userIsExistSerivce,
 } = require("../services/user.service");
+const fs = require("fs");
+const path = require("path");
+const XLSX = require("xlsx");
+const { createExcelFile } = require("../utils/createExcel");
 
 // user list
 const getUserList = async (req, res) => {
@@ -269,4 +273,113 @@ const getStatistics = async (req, res) => {
   }
 };
 
-module.exports = { getUserList, deleteUser, getStatistics };
+const downloadUserList = async (req, res) => {
+  try {
+    let { sortBy, sortDirection } = req.query;
+
+    let sortObj = { createdAt: -1 };
+
+    if (sortBy && sortDirection) {
+      if (sortBy === "role") sortBy = "role.name";
+      sortObj = { [sortBy]: Number(sortDirection) };
+    }
+
+    let filterObj = {
+      "role.name": {
+        $ne: "super admin",
+      },
+    };
+
+    const userListingQuery = [
+      {
+        $lookup: {
+          from: "role",
+          localField: "role",
+          foreignField: "_id",
+          as: "role",
+        },
+      },
+      {
+        $unwind: "$role",
+      },
+      {
+        $match: filterObj,
+      },
+      {
+        $sort: sortObj,
+      },
+      {
+        $project: {
+          _id: 1,
+          first_name: 1,
+          last_name: 1,
+          email: 1,
+          role: {
+            _id: "$role._id",
+            name: "$role.name",
+          },
+          createdAt: 1,
+          updatedAt: 1,
+          __v: 1,
+        },
+      },
+    ];
+
+    let userList = await getAllUserList(userListingQuery);
+
+    console.log(userList, "userList");
+
+    userList = userList.map((data, index) => {
+      let prepareData = {
+        "No": index + 1,
+        "First name": data.first_name,
+        "Last name": data.last_name,
+        "Email": data.email,
+        "Role": data.role.name,
+      }
+      return prepareData;
+    });
+
+    let options = {
+      header: [
+        'No',
+        "First name",
+        "Last name",
+        "Role"
+      ]
+    }
+    // return sendResponse(res, 200, true,'', userList)
+
+    // file name
+    const fileName = "example.xlsx";
+
+    // Write the workbook to a file
+    const excelFilePath = "public/" + fileName;
+
+    await createExcelFile(userList, options, excelFilePath);
+
+    // file send in buffer
+
+    const filePath = path.join(__dirname, "..", excelFilePath);
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send("Internal server error");
+      }
+
+      // Set response headers for file download
+      res.setHeader("Content-Type", "application/octet-stream");
+      res.setHeader("Content-Disposition", "attachment; filename=" + fileName); // Change 'file.txt' to the desired filename
+
+      // Send the buffer in the response
+      res.send(data);
+    });
+  } catch (error) {
+    console.log("admin.controller -> downloadUserList", error);
+    return sendResponse(res, 500, false, "Something went worng!", {
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { getUserList, deleteUser, getStatistics, downloadUserList };

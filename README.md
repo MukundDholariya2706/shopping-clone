@@ -4,6 +4,7 @@ To Run application
 
 1. npm i
 2. npm start
+3. node version - 14.16.1
 
 # For Stripe Payment using payment element (one time payment)
 
