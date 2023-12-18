@@ -16,7 +16,7 @@ const app = express();
 
 // Port
 const PORT = process.env.PORT || 3001;
-const URL = process.env.URL || '172.16.0.210';
+const URL = process.env.URL || 'localhost' || '172.16.0.210';
 
 // parse requests of content-type - application/json
 app.use(express.json());
