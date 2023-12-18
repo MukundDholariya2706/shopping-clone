@@ -16,7 +16,7 @@ const uploadFile = async (file) => {
   try {
     console.log(file, "file");
     const uploadParams = {
-      Bucket: process.env.AWS_BUCKET_NAME || '',
+      Bucket: process.env.AWS_BUCKET_NAME || "shopping-clone-image",
       Key: `${new Date().getTime()}-${file.originalname}`,
       Body: file.buffer,
       ACL: "public-read",
@@ -33,7 +33,14 @@ const deleteFile = async (fileName) => {
   try {
     // https://shopping-clone-image.s3.amazonaws.com/1702641667764-image_2023_12_13T09_00_07_646Z.png
 
-    const uploadParams = { Bucket: process.env.AWS_BUCKET_NAME, Key: fileName };
+    const imgUrl = fileName.split(
+      `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/`
+    );
+    const imagePath = imgUrl[1];
+    const uploadParams = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: imagePath,
+    };
     await s3.deleteObject(uploadParams).promise();
     return true;
   } catch (error) {
