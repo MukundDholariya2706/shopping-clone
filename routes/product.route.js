@@ -10,12 +10,15 @@ const {
   updateProduct,
   deleteProductImage,
   createStripeProduct,
+  uploadImagesInAWS,
 } = require("../controller/product.controller");
+const multer = require('multer');
 const { uploadError } = require("../services/common.service");
 const { upload } = require("../services/multer.service");
 const productRouter = express.Router();
 
 const validateSellerRole = validateRole(["seller"]);
+let uploadAWS = multer();
 
 productRouter.get("/get-product", authenticate, getProductList);
 
@@ -45,6 +48,14 @@ productRouter.post(
   uploadError,
   uploadImages
 );
+productRouter.post(
+  "/product-image-aws/:productId",
+  authenticate,
+  validateSellerRole,
+  uploadAWS.single('productImages'),
+  uploadImagesInAWS
+);
+
 productRouter.get("/image/:fileName", sendProductImage);
 productRouter.delete(
   "/product-image/:productId/imageId/:imageId",

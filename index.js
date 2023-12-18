@@ -20,7 +20,7 @@ const URL = process.env.URL || '172.16.0.210';
 
 // parse requests of content-type - application/json
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(logger("dev"));
 

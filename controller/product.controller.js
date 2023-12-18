@@ -13,7 +13,12 @@ const {
   findImageService,
 } = require("../services/image.service");
 const { unlinkImage } = require("../utils/utils");
-const { createProductInStripe, updateProductInStripe, deleteProductInStripe } = require("../services/payment.service");
+const {
+  createProductInStripe,
+  updateProductInStripe,
+  deleteProductInStripe,
+} = require("../services/payment.service");
+const { uploadFile } = require("../services/awsStorage.service");
 
 // list all product
 const getProductList = async (req, res) => {
@@ -247,8 +252,8 @@ const deleteProduct = async (req, res) => {
     // Delete the product and its associated image (if any)
     await Promise.all([
       deleteProductService(productId),
-      deleteProductInStripe(productExist[0].stripeProductId)
-    ])
+      deleteProductInStripe(productExist[0].stripeProductId),
+    ]);
 
     if (productExist[0].productImages != 0) {
       await deleteImageService({ _id: productExist[0].productImages });
@@ -331,10 +336,17 @@ const uploadImages = async (req, res) => {
         }
       );
 
-      console.log(existingProduct[0].productImages, 'existingProduct[0].productImages');
-      const resultArray = existingProduct[0].productImages.map(item => item.url);
+      console.log(
+        existingProduct[0].productImages,
+        "existingProduct[0].productImages"
+      );
+      const resultArray = existingProduct[0].productImages.map(
+        (item) => item.url
+      );
 
-      await updateProductInStripe(existingProduct[0].stripeProductId, {images: resultArray});
+      await updateProductInStripe(existingProduct[0].stripeProductId, {
+        images: resultArray,
+      });
 
       return sendResponse(
         res,
@@ -448,6 +460,17 @@ const createStripeProduct = async (req, res) => {
     });
   }
 };
+
+const uploadImagesInAWS = async (req, res) => {
+  try {
+    const data = await uploadFile(req.file);
+    return sendResponse(res, 200, true, "Image Uploaded", data);
+  } catch (error) {
+    return sendResponse(res, 500, false, "Something went worng!", {
+      message: error.message,
+    });
+  }
+};
 module.exports = {
   addProduct,
   deleteProduct,
@@ -457,4 +480,5 @@ module.exports = {
   sendProductImage,
   deleteProductImage,
   createStripeProduct,
+  uploadImagesInAWS,
 };
