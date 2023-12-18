@@ -9,7 +9,7 @@ const {
 
 dotenv.config();
 
-MONGODB_URI = process.env.DB_URL || 'mongodb+srv://mukunddtridhyatech:4swH4GkRRRFVTc79@shoppingclone.zeqz23g.mongodb.net/shopping_clone';
+MONGODB_URI = process.env.DB_URL || 'mongodb+srv://mukunddtridhyatech:2ppUJEJD61nF7ZiX@shopping-clone-db.iiirlyy.mongodb.net/shopping_clone';
 
 mongoose.connect(MONGODB_URI);
 
