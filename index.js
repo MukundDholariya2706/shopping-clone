@@ -6,6 +6,7 @@ const logger = require("morgan");
 const swagger = require("swagger-ui-express");
 const rootRouter = require("./routes/route");
 const swaggerDocument = require("./swagger/swagger.index");
+const cron = require("node-cron");
 
 // DB connection
 require("./config/dbConnection");
@@ -16,13 +17,18 @@ const app = express();
 
 // Port
 const PORT = process.env.PORT || 3001;
-const URL = process.env.URL || 'localhost' || '172.16.0.210';
+const URL = process.env.URL || "localhost" || "172.16.0.210";
 
 // parse requests of content-type - application/json
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(logger("dev"));
+
+// cron
+// cron.schedule('01 * * * * *', () => {
+//   console.log('called')
+// })
 
 // swagger UI
 app.use("/api-docs", swagger.serve, swagger.setup(swaggerDocument));
